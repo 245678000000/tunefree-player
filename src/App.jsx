@@ -786,8 +786,8 @@ function App() {
       setCurrentSong(songData)
       audioRef.current.src = url
       
-      // 初始化 Audio Context (首次播放时)
-      initAudioContext()
+      // 不再自动初始化 Audio Context，避免 CORS 问题导致无声音
+      // 只有在用户开启均衡器或可视化时才初始化
       
       setIsPlaying(true)
 
