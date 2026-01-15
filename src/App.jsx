@@ -322,7 +322,7 @@ function App() {
           <div className="logo-icon">
             <MusicNoteIcon />
           </div>
-          <h1>TuneFree</h1>
+          <h1>XingPeng</h1>
         </div>
 
         <nav className="sidebar-nav">
