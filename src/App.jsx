@@ -124,6 +124,71 @@ const VisualizerIcon = () => (
   </svg>
 )
 
+const EQIcon = () => (
+  <svg viewBox="0 0 24 24" fill="currentColor">
+    <path d="M3 9v6h4l5 5V4L7 9H3zm7-.17v6.34L7.83 13H5v-2h2.83L10 8.83zM16.5 12A4.5 4.5 0 0014 7.97v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+  </svg>
+)
+
+const SettingsIcon = () => (
+  <svg viewBox="0 0 24 24" fill="currentColor">
+    <path d="M19.14 12.94c.04-.31.06-.63.06-.94 0-.31-.02-.63-.06-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
+  </svg>
+)
+
+const SunIcon = () => (
+  <svg viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0 .39-.39.39-1.03 0-1.41l-1.06-1.06zm1.06-10.96c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z"/>
+  </svg>
+)
+
+const MoonIcon = () => (
+  <svg viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/>
+  </svg>
+)
+
+const HDIcon = () => (
+  <svg viewBox="0 0 24 24" fill="currentColor">
+    <path d="M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-8 12H9.5v-2h-2v2H6V9h1.5v2.5h2V9H11v6zm2-6h4c.55 0 1 .45 1 1v4c0 .55-.45 1-1 1h-4V9zm1.5 4.5h2v-3h-2v3z"/>
+  </svg>
+)
+
+const DownloadIcon = () => (
+  <svg viewBox="0 0 24 24" fill="currentColor">
+    <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
+  </svg>
+)
+
+// EQ 预设配置
+const EQ_PRESETS = {
+  flat: { name: '默认', values: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
+  pop: { name: '流行', values: [-1, 2, 4, 5, 3, 0, -1, -1, 2, 3] },
+  rock: { name: '摇滚', values: [5, 4, 3, 1, -1, -1, 0, 2, 3, 4] },
+  classical: { name: '古典', values: [4, 3, 2, 1, -1, -1, 0, 2, 3, 4] },
+  electronic: { name: '电子', values: [4, 3, 0, -2, -2, 0, 2, 4, 5, 5] },
+  jazz: { name: '爵士', values: [3, 2, 1, 2, -2, -2, 0, 1, 2, 3] },
+  bass: { name: '低音增强', values: [6, 5, 4, 2, 0, 0, 0, 0, 0, 0] },
+  vocal: { name: '人声增强', values: [-2, -1, 0, 2, 4, 4, 3, 1, 0, -1] }
+}
+
+// EQ 频率
+const EQ_FREQUENCIES = [32, 64, 125, 250, 500, 1000, 2000, 4000, 8000, 16000]
+
+// 音质选项
+const QUALITY_OPTIONS = [
+  { id: 'standard', label: '标准', bitrate: '128kbps', value: 'standard' },
+  { id: 'high', label: '高品质', bitrate: '320kbps', value: 'high' },
+  { id: 'lossless', label: '无损', bitrate: 'FLAC', value: 'lossless' }
+]
+
+// 主题选项
+const THEME_OPTIONS = [
+  { id: 'dark', label: '深色', icon: 'moon' },
+  { id: 'light', label: '浅色', icon: 'sun' },
+  { id: 'system', label: '跟随系统', icon: 'auto' }
+]
+
 function App() {
   // Navigation state
   const [activeView, setActiveView] = useState('home')
@@ -181,6 +246,23 @@ function App() {
   // Search history (persisted)
   const [searchHistory, setSearchHistory] = useLocalStorage(STORAGE_KEYS.SEARCH_HISTORY, [])
 
+  // EQ & Settings state (persisted)
+  const [eqSettings, setEqSettings] = useLocalStorage(STORAGE_KEYS.EQ_SETTINGS, {
+    preset: 'flat',
+    values: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    enabled: true
+  })
+  const [audioQuality, setAudioQuality] = useLocalStorage(STORAGE_KEYS.AUDIO_QUALITY, 'high')
+  const [theme, setTheme] = useLocalStorage(STORAGE_KEYS.THEME, 'dark')
+  
+  // UI state for EQ and Settings
+  const [showEQ, setShowEQ] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
+
+  // PWA install state
+  const [deferredPrompt, setDeferredPrompt] = useState(null)
+  const [showInstallPrompt, setShowInstallPrompt] = useState(false)
+
   // Audio ref
   const audioRef = useRef(new Audio())
   const lyricsContainerRef = useRef(null)
@@ -192,6 +274,8 @@ function App() {
   const audioContextRef = useRef(null)
   const analyserRef = useRef(null)
   const animationRef = useRef(null)
+  const eqFiltersRef = useRef([])
+  const sourceNodeRef = useRef(null)
   const [showVisualizer, setShowVisualizer] = useState(false)
 
   // Handle window resize for mobile detection
@@ -296,6 +380,144 @@ function App() {
     return () => clearInterval(interval)
   }, [sleepTimer])
 
+  // Theme logic
+  useEffect(() => {
+    const applyTheme = (themeName) => {
+      document.documentElement.setAttribute('data-theme', themeName)
+    }
+    
+    if (theme === 'system') {
+      // 跟随系统主题
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+      applyTheme(mediaQuery.matches ? 'dark' : 'light')
+      
+      const handler = (e) => applyTheme(e.matches ? 'dark' : 'light')
+      mediaQuery.addEventListener('change', handler)
+      return () => mediaQuery.removeEventListener('change', handler)
+    } else {
+      applyTheme(theme)
+    }
+  }, [theme])
+
+  // PWA install prompt
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e) => {
+      e.preventDefault()
+      setDeferredPrompt(e)
+      // 显示安装提示（如果用户还没有安装）
+      if (!window.matchMedia('(display-mode: standalone)').matches) {
+        setShowInstallPrompt(true)
+      }
+    }
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+    
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+    }
+  }, [])
+
+  // Handle PWA install
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return
+    
+    deferredPrompt.prompt()
+    const { outcome } = await deferredPrompt.userChoice
+    
+    if (outcome === 'accepted') {
+      console.log('用户接受了安装提示')
+    }
+    
+    setDeferredPrompt(null)
+    setShowInstallPrompt(false)
+  }
+
+  // Dismiss install prompt
+  const dismissInstallPrompt = () => {
+    setShowInstallPrompt(false)
+  }
+
+  // Initialize Audio Context with EQ
+  const initAudioContext = useCallback(() => {
+    if (audioContextRef.current) return
+    
+    try {
+      audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)()
+      
+      // 创建源节点
+      sourceNodeRef.current = audioContextRef.current.createMediaElementSource(audioRef.current)
+      
+      // 创建分析器
+      analyserRef.current = audioContextRef.current.createAnalyser()
+      analyserRef.current.fftSize = 256
+      
+      // 创建 10 频段 EQ 滤波器
+      eqFiltersRef.current = EQ_FREQUENCIES.map((freq, index) => {
+        const filter = audioContextRef.current.createBiquadFilter()
+        filter.type = index === 0 ? 'lowshelf' : index === 9 ? 'highshelf' : 'peaking'
+        filter.frequency.value = freq
+        filter.Q.value = 1.4
+        filter.gain.value = eqSettings.enabled ? eqSettings.values[index] : 0
+        return filter
+      })
+      
+      // 连接音频链：source -> EQ filters -> analyser -> destination
+      let lastNode = sourceNodeRef.current
+      eqFiltersRef.current.forEach(filter => {
+        lastNode.connect(filter)
+        lastNode = filter
+      })
+      lastNode.connect(analyserRef.current)
+      analyserRef.current.connect(audioContextRef.current.destination)
+      
+    } catch (e) {
+      console.error('Audio context initialization failed:', e)
+    }
+  }, [eqSettings.enabled, eqSettings.values])
+
+  // Update EQ values when changed
+  useEffect(() => {
+    if (!eqFiltersRef.current.length) return
+    
+    eqFiltersRef.current.forEach((filter, index) => {
+      const targetGain = eqSettings.enabled ? eqSettings.values[index] : 0
+      filter.gain.setValueAtTime(targetGain, audioContextRef.current?.currentTime || 0)
+    })
+  }, [eqSettings.values, eqSettings.enabled])
+
+  // Apply EQ preset
+  const applyEQPreset = (presetId) => {
+    const preset = EQ_PRESETS[presetId]
+    if (preset) {
+      setEqSettings(prev => ({
+        ...prev,
+        preset: presetId,
+        values: [...preset.values]
+      }))
+    }
+  }
+
+  // Update single EQ band
+  const updateEQBand = (index, value) => {
+    setEqSettings(prev => {
+      const newValues = [...prev.values]
+      newValues[index] = value
+      return {
+        ...prev,
+        preset: 'custom',
+        values: newValues
+      }
+    })
+  }
+
+  // Toggle EQ
+  const toggleEQ = () => {
+    setEqSettings(prev => ({
+      ...prev,
+      enabled: !prev.enabled
+    }))
+  }
+
   // Audio visualizer
   useEffect(() => {
     if (!showVisualizer || !canvasRef.current) return
@@ -311,21 +533,10 @@ function App() {
     }
     resizeCanvas()
 
-    // 初始化 Audio Context
-    if (!audioContextRef.current) {
-      try {
-        audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)()
-        analyserRef.current = audioContextRef.current.createAnalyser()
-        analyserRef.current.fftSize = 256
-        
-        const source = audioContextRef.current.createMediaElementSource(audioRef.current)
-        source.connect(analyserRef.current)
-        analyserRef.current.connect(audioContextRef.current.destination)
-      } catch (e) {
-        console.error('Audio visualizer not supported:', e)
-        return
-      }
-    }
+    // 初始化 Audio Context (如果还没有)
+    initAudioContext()
+
+    if (!analyserRef.current) return
 
     const analyser = analyserRef.current
     const bufferLength = analyser.frequencyBinCount
@@ -372,7 +583,7 @@ function App() {
         cancelAnimationFrame(animationRef.current)
       }
     }
-  }, [showVisualizer, isPlaying])
+  }, [showVisualizer, isPlaying, initAudioContext])
 
   // Touch gesture handlers for mobile
   const handleTouchStart = (e) => {
@@ -521,7 +732,7 @@ function App() {
         const parsed = parseLyrics(lrcText)
         setLyrics(parsed)
         setCurrentLyricIndex(0)
-      } catch (error) {
+    } catch (error) {
         console.error('加载歌词失败:', error)
         setLyrics([])
       }
@@ -543,7 +754,8 @@ function App() {
     try {
       setIsLoading(true)
       const source = song.platform || song.source || SOURCES.NETEASE
-      const url = await getSongUrl(song.id, source)
+      // 传入音质参数
+      const url = await getSongUrl(song.id, source, audioQuality)
       const pic = getSongPic(song.id, source)
 
       const songData = {
@@ -558,6 +770,10 @@ function App() {
 
       setCurrentSong(songData)
       audioRef.current.src = url
+      
+      // 初始化 Audio Context (首次播放时)
+      initAudioContext()
+      
       setIsPlaying(true)
 
       // 保存到播放历史
@@ -998,13 +1214,13 @@ function App() {
         <header className="header">
           <form className="search-form" onSubmit={handleSearch}>
             <div className="search-container">
-              <SearchIcon />
-              <input
-                type="text"
-                className="search-input"
-                placeholder="搜索歌曲、歌手、专辑..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+            <SearchIcon />
+            <input
+              type="text"
+              className="search-input"
+              placeholder="搜索歌曲、歌手、专辑..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
                 onFocus={() => setShowSearchSuggestions(true)}
                 onBlur={() => setTimeout(() => setShowSearchSuggestions(false), 200)}
               />
@@ -1064,7 +1280,7 @@ function App() {
 
         {/* Content Area */}
         <div className="content-area">
-          {currentView === 'home' && (
+        {currentView === 'home' && (
             <div className="home-view">
               <div className="section-header">
                 <div className="section-title-group">
@@ -1076,10 +1292,10 @@ function App() {
                   <span>播放全部</span>
                 </button>
               </div>
-              <div className="content-grid">
+            <div className="content-grid">
                 {RECOMMENDED_SONGS.map((song, index) => (
-                  <div
-                    key={song.id}
+                <div
+                  key={song.id}
                     className={`music-card ${currentSong?.id === song.id ? 'playing' : ''}`}
                     onClick={() => {
                       setPlaylist(RECOMMENDED_SONGS)
@@ -1089,44 +1305,44 @@ function App() {
                     <div className="music-card-image-wrapper">
                       <img
                         src={getSongPic(song.id, song.source)}
-                        alt={song.name}
-                        className="music-card-image"
-                        loading="lazy"
+                    alt={song.name}
+                    className="music-card-image"
+                    loading="lazy"
                         onError={(e) => { e.target.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%23282828" width="100" height="100"/><text x="50" y="55" text-anchor="middle" fill="%23666" font-size="40">♪</text></svg>' }}
-                      />
-                      <div className="music-card-play-btn">
+                  />
+                  <div className="music-card-play-btn">
                         {currentSong?.id === song.id && isPlaying ? <PauseIcon /> : <PlayIcon />}
-                      </div>
+                  </div>
                       <div className="music-card-overlay" />
                     </div>
                     <div className="music-card-info">
-                      <div className="music-card-title">{song.name}</div>
-                      <div className="music-card-artist">{song.artist}</div>
+                  <div className="music-card-title">{song.name}</div>
+                  <div className="music-card-artist">{song.artist}</div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
-          )}
+            </div>
+        )}
 
-          {currentView === 'search' && (
+        {currentView === 'search' && (
             <div className="search-view">
               <h2 className="view-title">
                 {searchQuery ? `"${searchQuery}" 的搜索结果` : '搜索音乐'}
               </h2>
 
-              {isSearching ? (
+            {isSearching ? (
                 <div className="loading-state">
-                  <div className="spinner" />
+              <div className="spinner" />
                   <p>正在搜索...</p>
                 </div>
-              ) : searchError ? (
-                <div className="empty-state">
+            ) : searchError ? (
+              <div className="empty-state">
                   <div className="empty-icon error">!</div>
-                  <h3>搜索失败</h3>
-                  <p>{searchError}</p>
-                </div>
-              ) : searchResults.length > 0 ? (
+                <h3>搜索失败</h3>
+                <p>{searchError}</p>
+              </div>
+            ) : searchResults.length > 0 ? (
                 <div className="search-results">
                   <div className="results-header">
                     <span className="results-count">找到 {searchResults.length} 首歌曲</span>
@@ -1142,8 +1358,8 @@ function App() {
                     </button>
                   </div>
                   <div className="song-list">
-                    {searchResults.map((song, index) => (
-                      <div
+                {searchResults.map((song, index) => (
+                  <div
                         key={`${song.id}-${index}`}
                         className={`song-item ${currentSong?.id === song.id ? 'playing' : ''}`}
                         onClick={() => {
@@ -1163,7 +1379,7 @@ function App() {
                           <span className="song-artist">
                             {song.artist || song.singer || song.ar?.[0]?.name || '未知歌手'}
                           </span>
-                        </div>
+                    </div>
                         <span className="song-platform">
                           {song.platform === 'netease' ? '网易云' :
                            song.platform === 'kuwo' ? '酷我' :
@@ -1210,7 +1426,7 @@ function App() {
                                 <AddIcon />
                                 <span>创建新歌单</span>
                               </button>
-                            </div>
+                    </div>
                           )}
                           <button
                             className="song-action-btn"
@@ -1222,24 +1438,24 @@ function App() {
                           >
                             {currentSong?.id === song.id && isPlaying ? <PauseIcon /> : <PlayIcon />}
                           </button>
-                        </div>
-                      </div>
-                    ))}
+                    </div>
                   </div>
-                </div>
-              ) : (
-                <div className="empty-state">
+                ))}
+                  </div>
+              </div>
+            ) : (
+              <div className="empty-state">
                   <div className="empty-icon">
                     <SearchIcon />
                   </div>
                   <h3>搜索你喜欢的音乐</h3>
-                  <p>输入歌曲名、歌手名开始搜索</p>
-                </div>
-              )}
+                <p>输入歌曲名、歌手名开始搜索</p>
+              </div>
+            )}
             </div>
-          )}
+        )}
 
-          {currentView === 'library' && (
+        {currentView === 'library' && (
             <div className="library-view">
               <h2 className="view-title">我的收藏</h2>
               {favorites.length > 0 ? (
@@ -1293,14 +1509,14 @@ function App() {
                   </div>
                 </div>
               ) : (
-                <div className="empty-state">
+          <div className="empty-state">
                   <div className="empty-icon">
                     <HeartIcon filled={false} />
                   </div>
-                  <h3>暂无收藏</h3>
+            <h3>暂无收藏</h3>
                   <p>播放歌曲时点击爱心即可收藏</p>
-                </div>
-              )}
+          </div>
+        )}
             </div>
           )}
 
@@ -1673,6 +1889,149 @@ function App() {
         </div>
       )}
 
+      {/* EQ Panel */}
+      {showEQ && (
+        <aside className="eq-panel">
+          <div className="eq-header">
+            <h3>均衡器</h3>
+            <div className="eq-header-actions">
+              <button 
+                className={`eq-toggle ${eqSettings.enabled ? 'active' : ''}`}
+                onClick={toggleEQ}
+              >
+                {eqSettings.enabled ? '开' : '关'}
+              </button>
+              <button className="eq-close-btn" onClick={() => setShowEQ(false)}>
+                <CloseIcon />
+              </button>
+            </div>
+          </div>
+          <div className="eq-presets">
+            {Object.entries(EQ_PRESETS).map(([id, preset]) => (
+              <button
+                key={id}
+                className={`eq-preset-btn ${eqSettings.preset === id ? 'active' : ''}`}
+                onClick={() => applyEQPreset(id)}
+              >
+                {preset.name}
+              </button>
+            ))}
+          </div>
+          <div className="eq-sliders">
+            {EQ_FREQUENCIES.map((freq, index) => (
+              <div key={freq} className="eq-slider-group">
+                <input
+                  type="range"
+                  className="eq-slider"
+                  min="-12"
+                  max="12"
+                  step="1"
+                  value={eqSettings.values[index]}
+                  onChange={(e) => updateEQBand(index, parseInt(e.target.value))}
+                  disabled={!eqSettings.enabled}
+                />
+                <span className="eq-value">{eqSettings.values[index] > 0 ? '+' : ''}{eqSettings.values[index]}</span>
+                <span className="eq-freq">{freq >= 1000 ? `${freq/1000}k` : freq}</span>
+              </div>
+            ))}
+          </div>
+        </aside>
+      )}
+
+      {/* Settings Panel */}
+      {showSettings && (
+        <div className="modal-overlay" onClick={() => setShowSettings(false)}>
+          <div className="modal settings-modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>设置</h3>
+              <button className="modal-close" onClick={() => setShowSettings(false)}>
+                <CloseIcon />
+              </button>
+            </div>
+            <div className="modal-body settings-body">
+              {/* Theme Setting */}
+              <div className="settings-section">
+                <h4>主题</h4>
+                <div className="settings-options theme-options">
+                  {THEME_OPTIONS.map(option => (
+                    <button
+                      key={option.id}
+                      className={`settings-option ${theme === option.id ? 'active' : ''}`}
+                      onClick={() => setTheme(option.id)}
+                    >
+                      {option.icon === 'moon' && <MoonIcon />}
+                      {option.icon === 'sun' && <SunIcon />}
+                      {option.icon === 'auto' && <SettingsIcon />}
+                      <span>{option.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Audio Quality Setting */}
+              <div className="settings-section">
+                <h4>音质</h4>
+                <div className="settings-options quality-options">
+                  {QUALITY_OPTIONS.map(option => (
+                    <button
+                      key={option.id}
+                      className={`settings-option ${audioQuality === option.id ? 'active' : ''}`}
+                      onClick={() => setAudioQuality(option.id)}
+                    >
+                      <HDIcon />
+                      <div className="quality-info">
+                        <span className="quality-label">{option.label}</span>
+                        <span className="quality-bitrate">{option.bitrate}</span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+                <p className="settings-hint">切换音质后需重新播放歌曲生效</p>
+              </div>
+
+              {/* Keyboard Shortcuts */}
+              <div className="settings-section">
+                <h4>快捷键</h4>
+                <div className="shortcuts-list">
+                  <div className="shortcut-item"><kbd>Space</kbd><span>播放/暂停</span></div>
+                  <div className="shortcut-item"><kbd>←</kbd><span>快退 5 秒</span></div>
+                  <div className="shortcut-item"><kbd>→</kbd><span>快进 5 秒</span></div>
+                  <div className="shortcut-item"><kbd>Shift+←</kbd><span>上一首</span></div>
+                  <div className="shortcut-item"><kbd>Shift+→</kbd><span>下一首</span></div>
+                  <div className="shortcut-item"><kbd>↑/↓</kbd><span>调节音量</span></div>
+                  <div className="shortcut-item"><kbd>M</kbd><span>静音切换</span></div>
+                  <div className="shortcut-item"><kbd>L</kbd><span>显示歌词</span></div>
+                  <div className="shortcut-item"><kbd>Q</kbd><span>播放队列</span></div>
+                  <div className="shortcut-item"><kbd>R</kbd><span>单曲循环</span></div>
+                  <div className="shortcut-item"><kbd>S</kbd><span>随机播放</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* PWA Install Prompt */}
+      {showInstallPrompt && (
+        <div className="install-prompt">
+          <div className="install-prompt-content">
+            <DownloadIcon />
+            <div className="install-prompt-text">
+              <strong>安装 XingPeng</strong>
+              <span>添加到主屏幕，享受更好的体验</span>
+            </div>
+          </div>
+          <div className="install-prompt-actions">
+            <button className="install-btn" onClick={handleInstallClick}>
+              安装
+            </button>
+            <button className="install-dismiss" onClick={dismissInstallPrompt}>
+              以后再说
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Lyrics Panel */}
       {showLyrics && currentSong && (
         <aside className="lyrics-panel">
@@ -1804,6 +2163,13 @@ function App() {
             )}
           </button>
           <button
+            className={`player-control-btn ${showEQ ? 'active' : ''}`}
+            onClick={() => setShowEQ(!showEQ)}
+            title="均衡器"
+          >
+            <EQIcon />
+          </button>
+          <button
             className={`player-control-btn ${showVisualizer ? 'active' : ''}`}
             onClick={() => setShowVisualizer(!showVisualizer)}
             title="可视化"
@@ -1836,6 +2202,13 @@ function App() {
             />
             <div className="volume-fill" style={{ width: `${volume * 100}%` }} />
           </div>
+          <button
+            className="player-control-btn"
+            onClick={() => setShowSettings(true)}
+            title="设置"
+          >
+            <SettingsIcon />
+          </button>
         </div>
       </footer>
 

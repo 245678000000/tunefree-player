@@ -113,14 +113,23 @@ export async function getSongInfo(id, source = SOURCES.NETEASE) {
   }
 }
 
+// 音质映射
+const QUALITY_MAP = {
+  standard: '128k',
+  high: '320k',
+  lossless: 'flac'
+}
+
 /**
  * 获取歌曲播放链接
  * @param {string} id - 歌曲ID
  * @param {string} source - 音乐平台，默认 netease
- * @param {string} br - 音质，默认 320k
+ * @param {string} quality - 音质，可选 standard/high/lossless，默认 high
  * @returns {Promise} 播放链接URL
  */
-export async function getSongUrl(id, source = SOURCES.NETEASE, br = '320k') {
+export async function getSongUrl(id, source = SOURCES.NETEASE, quality = 'high') {
+  // 将音质标识转换为 API 接受的格式
+  const br = QUALITY_MAP[quality] || '320k'
   // 直接返回API URL，浏览器会自动处理302重定向
   return `${BASE_URL}/api/?source=${source}&id=${id}&type=url&br=${br}`
 }

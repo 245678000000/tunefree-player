@@ -7,8 +7,9 @@
   box-sizing: border-box;
 }
 
-:root {
-  /* Spotify Color System */
+:root,
+[data-theme="dark"] {
+  /* Spotify Color System - Dark Theme */
   --bg-primary: #121212;
   --bg-sidebar: #000000;
   --bg-secondary: #181818;
@@ -44,6 +45,22 @@
   --transition-fast: 0.1s ease;
   --transition-normal: 0.2s ease;
   --transition-slow: 0.3s ease;
+}
+
+/* Light Theme */
+[data-theme="light"] {
+  --bg-primary: #f5f5f5;
+  --bg-sidebar: #ffffff;
+  --bg-secondary: #ffffff;
+  --bg-elevated: #e8e8e8;
+  --bg-notification: #d4d4d4;
+
+  --text-primary: #121212;
+  --text-secondary: #535353;
+  --text-tertiary: #808080;
+
+  --border-default: #d4d4d4;
+  --border-subtle: rgba(0, 0, 0, 0.1);
 }
 
 body {
@@ -2432,5 +2449,422 @@ body {
   .add-to-playlist-dropdown {
     right: auto;
     left: -100px;
+  }
+
+  .eq-panel {
+    display: none;
+  }
+}
+
+/* ===== EQ Panel ===== */
+.eq-panel {
+  position: fixed;
+  right: 0;
+  top: 0;
+  bottom: var(--player-height);
+  width: 380px;
+  background: linear-gradient(180deg, #1a1a2e 0%, #0f0f1a 100%);
+  border-left: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  z-index: 50;
+  animation: slideIn 0.3s ease;
+}
+
+[data-theme="light"] .eq-panel {
+  background: linear-gradient(180deg, #f0f0f5 0%, #e0e0e8 100%);
+}
+
+.eq-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.eq-header h3 {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.eq-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.eq-toggle {
+  padding: 6px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--border-subtle);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.eq-toggle.active {
+  background: var(--accent-green);
+  border-color: var(--accent-green);
+  color: var(--bg-primary);
+}
+
+.eq-close-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+
+.eq-close-btn:hover {
+  color: var(--text-primary);
+  background: var(--bg-notification);
+}
+
+.eq-close-btn svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+}
+
+.eq-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.eq-preset-btn {
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--border-subtle);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.eq-preset-btn:hover {
+  color: var(--text-primary);
+  border-color: var(--text-primary);
+}
+
+.eq-preset-btn.active {
+  background: var(--accent-green);
+  border-color: var(--accent-green);
+  color: var(--bg-primary);
+}
+
+.eq-sliders {
+  flex: 1;
+  display: flex;
+  justify-content: space-around;
+  align-items: stretch;
+  padding: 24px 16px;
+  gap: 4px;
+}
+
+.eq-slider-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.eq-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  writing-mode: vertical-lr;
+  direction: rtl;
+  width: 6px;
+  height: 180px;
+  background: var(--bg-elevated);
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.eq-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  background: var(--accent-green);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.eq-slider:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.eq-slider:disabled::-webkit-slider-thumb {
+  background: var(--text-tertiary);
+}
+
+.eq-value {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent-green);
+  min-width: 28px;
+  text-align: center;
+}
+
+.eq-freq {
+  font-size: 10px;
+  color: var(--text-tertiary);
+}
+
+/* ===== Settings Modal ===== */
+.settings-modal {
+  max-width: 480px;
+}
+
+.settings-body {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.settings-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.settings-section h4 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.settings-options {
+  display: flex;
+  gap: 8px;
+}
+
+.theme-options {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.quality-options {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.settings-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 12px;
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.settings-option:hover {
+  border-color: var(--text-tertiary);
+  color: var(--text-primary);
+}
+
+.settings-option.active {
+  border-color: var(--accent-green);
+  background: rgba(29, 185, 84, 0.1);
+  color: var(--accent-green);
+}
+
+.settings-option svg {
+  width: 24px;
+  height: 24px;
+  fill: currentColor;
+}
+
+.settings-option span {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.quality-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.quality-label {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.quality-bitrate {
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+.settings-hint {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  font-style: italic;
+}
+
+.shortcuts-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.shortcut-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  background: var(--bg-primary);
+  border-radius: var(--border-radius-sm);
+}
+
+.shortcut-item kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  padding: 4px 8px;
+  background: var(--bg-elevated);
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.shortcut-item span {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* ===== PWA Install Prompt ===== */
+.install-prompt {
+  position: fixed;
+  bottom: calc(var(--player-height) + 16px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-elevated);
+  border-radius: var(--border-radius-md);
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  z-index: 200;
+  animation: slideUp 0.3s ease;
+  max-width: 480px;
+  width: calc(100% - 32px);
+}
+
+.install-prompt-content {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.install-prompt-content svg {
+  width: 32px;
+  height: 32px;
+  fill: var(--accent-green);
+  flex-shrink: 0;
+}
+
+.install-prompt-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.install-prompt-text strong {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.install-prompt-text span {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.install-prompt-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.install-btn {
+  padding: 10px 20px;
+  background: var(--accent-green);
+  color: var(--bg-primary);
+  border: none;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.install-btn:hover {
+  background: var(--accent-green-hover);
+  transform: scale(1.02);
+}
+
+.install-dismiss {
+  padding: 10px 16px;
+  background: transparent;
+  color: var(--text-secondary);
+  border: none;
+  font-size: 13px;
+  cursor: pointer;
+  transition: color var(--transition-fast);
+}
+
+.install-dismiss:hover {
+  color: var(--text-primary);
+}
+
+@media (max-width: 768px) {
+  .install-prompt {
+    bottom: calc(56px + 64px + 16px);
+    flex-direction: column;
+    gap: 16px;
+    text-align: center;
+  }
+
+  .install-prompt-content {
+    flex-direction: column;
+  }
+
+  .install-prompt-actions {
+    width: 100%;
+    justify-content: center;
   }
 }
