@@ -439,7 +439,13 @@ function App() {
 
   // Initialize Audio Context with EQ
   const initAudioContext = useCallback(() => {
-    if (audioContextRef.current) return
+    if (audioContextRef.current) {
+      // 如果已存在，确保恢复播放状态
+      if (audioContextRef.current.state === 'suspended') {
+        audioContextRef.current.resume()
+      }
+      return
+    }
     
     try {
       audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)()
@@ -469,6 +475,11 @@ function App() {
       })
       lastNode.connect(analyserRef.current)
       analyserRef.current.connect(audioContextRef.current.destination)
+      
+      // 恢复 AudioContext（浏览器自动播放策略）
+      if (audioContextRef.current.state === 'suspended') {
+        audioContextRef.current.resume()
+      }
       
     } catch (e) {
       console.error('Audio context initialization failed:', e)
@@ -655,6 +666,10 @@ function App() {
   // Handle play/pause
   useEffect(() => {
     if (isPlaying && currentSong) {
+      // 确保 AudioContext 处于运行状态
+      if (audioContextRef.current && audioContextRef.current.state === 'suspended') {
+        audioContextRef.current.resume()
+      }
       audioRef.current.play().catch(e => {
         console.error('播放失败:', e)
         setIsPlaying(false)
