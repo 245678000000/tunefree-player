@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import {
   searchSongs,
   aggregateSearch,
@@ -9,6 +9,7 @@ import {
   SOURCES,
   RECOMMENDED_SONGS
 } from './api/tunehub'
+import { useLocalStorage, STORAGE_KEYS, addToHistory } from './hooks/useLocalStorage'
 
 // Icons as SVG components
 const HomeIcon = () => (
@@ -21,6 +22,10 @@ const SearchIcon = () => (
 
 const LibraryIcon = () => (
   <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-3 9h-4v4h-2v-4H7V9h4V5h2v4h4v2z"/></svg>
+)
+
+const HistoryIcon = () => (
+  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
 )
 
 const PlayIcon = () => (
@@ -69,8 +74,28 @@ const ChartIcon = () => (
   <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg>
 )
 
-const ListIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+const LyricsIcon = () => (
+  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 9h-2v2H9v-2H7V9h2V7h2v2h2v2zm0-4V3.5L18.5 9H13z"/></svg>
+)
+
+const DeleteIcon = () => (
+  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+)
+
+const AddIcon = () => (
+  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+)
+
+const FolderIcon = () => (
+  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z"/></svg>
+)
+
+const EditIcon = () => (
+  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a.9959.9959 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+)
+
+const CloseIcon = () => (
+  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
 )
 
 function App() {
@@ -83,7 +108,7 @@ function App() {
   const [searchResults, setSearchResults] = useState([])
   const [isSearching, setIsSearching] = useState(false)
   const [searchError, setSearchError] = useState('')
-  const [searchSource, setSearchSource] = useState('all') // all, netease, kuwo, qq
+  const [searchSource, setSearchSource] = useState('all')
 
   // Player state
   const [currentSong, setCurrentSong] = useState(null)
@@ -91,53 +116,116 @@ function App() {
   const [progress, setProgress] = useState(0)
   const [duration, setDuration] = useState(0)
   const [currentTime, setCurrentTime] = useState(0)
-  const [volume, setVolume] = useState(0.7)
   const [isLoading, setIsLoading] = useState(false)
   const [playlist, setPlaylist] = useState([])
   const [currentIndex, setCurrentIndex] = useState(-1)
   const [isShuffle, setIsShuffle] = useState(false)
   const [isRepeat, setIsRepeat] = useState(false)
-  const [favorites, setFavorites] = useState([])
+
+  // Lyrics state
+  const [lyrics, setLyrics] = useState([])
+  const [showLyrics, setShowLyrics] = useState(false)
+  const [currentLyricIndex, setCurrentLyricIndex] = useState(0)
+
+  // 使用 localStorage 持久化的状态
+  const [favorites, setFavorites] = useLocalStorage(STORAGE_KEYS.FAVORITES, [])
+  const [playHistory, setPlayHistory] = useLocalStorage(STORAGE_KEYS.PLAY_HISTORY, [])
+  const [volume, setVolume] = useLocalStorage(STORAGE_KEYS.VOLUME, 0.7)
+  const [userPlaylists, setUserPlaylists] = useLocalStorage(STORAGE_KEYS.PLAYLISTS, [])
+  const [lastSong, setLastSong] = useLocalStorage(STORAGE_KEYS.LAST_SONG, null)
+
+  // Playlist management state
+  const [showPlaylistModal, setShowPlaylistModal] = useState(false)
+  const [editingPlaylist, setEditingPlaylist] = useState(null)
+  const [playlistName, setPlaylistName] = useState('')
+  const [selectedPlaylistId, setSelectedPlaylistId] = useState(null)
+  const [showAddToPlaylist, setShowAddToPlaylist] = useState(null)
+
+  // Mobile state
+  const [showFullPlayer, setShowFullPlayer] = useState(false)
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
 
   // Audio ref
   const audioRef = useRef(new Audio())
+  const lyricsContainerRef = useRef(null)
+  const touchStartX = useRef(0)
+  const touchEndX = useRef(0)
+
+  // Handle window resize for mobile detection
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
+  // Touch gesture handlers for mobile
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.touches[0].clientX
+  }
+
+  const handleTouchMove = (e) => {
+    touchEndX.current = e.touches[0].clientX
+  }
+
+  const handleTouchEnd = () => {
+    const diff = touchStartX.current - touchEndX.current
+    const threshold = 50
+
+    if (Math.abs(diff) > threshold) {
+      if (diff > 0) {
+        // Swipe left - next song
+        playNext()
+      } else {
+        // Swipe right - previous song
+        playPrev()
+      }
+    }
+  }
 
   // Initialize audio
   useEffect(() => {
     const audio = audioRef.current
     audio.volume = volume
 
-    audio.addEventListener('loadedmetadata', () => {
-      setDuration(audio.duration)
-    })
-
-    audio.addEventListener('timeupdate', () => {
+    const handleLoadedMetadata = () => setDuration(audio.duration)
+    const handleTimeUpdate = () => {
       setCurrentTime(audio.currentTime)
       setProgress((audio.currentTime / audio.duration) * 100 || 0)
-    })
-
-    audio.addEventListener('ended', () => {
+    }
+    const handleEnded = () => {
       if (isRepeat) {
         audio.currentTime = 0
         audio.play()
       } else {
         playNext()
       }
-    })
+    }
+    const handleCanPlay = () => setIsLoading(false)
+    const handleWaiting = () => setIsLoading(true)
 
-    audio.addEventListener('canplay', () => {
-      setIsLoading(false)
-    })
-
-    audio.addEventListener('waiting', () => {
-      setIsLoading(true)
-    })
+    audio.addEventListener('loadedmetadata', handleLoadedMetadata)
+    audio.addEventListener('timeupdate', handleTimeUpdate)
+    audio.addEventListener('ended', handleEnded)
+    audio.addEventListener('canplay', handleCanPlay)
+    audio.addEventListener('waiting', handleWaiting)
 
     return () => {
+      audio.removeEventListener('loadedmetadata', handleLoadedMetadata)
+      audio.removeEventListener('timeupdate', handleTimeUpdate)
+      audio.removeEventListener('ended', handleEnded)
+      audio.removeEventListener('canplay', handleCanPlay)
+      audio.removeEventListener('waiting', handleWaiting)
       audio.pause()
       audio.src = ''
     }
   }, [isRepeat])
+
+  // Sync volume to audio
+  useEffect(() => {
+    audioRef.current.volume = volume
+  }, [volume])
 
   // Handle play/pause
   useEffect(() => {
@@ -150,6 +238,83 @@ function App() {
       audioRef.current.pause()
     }
   }, [isPlaying, currentSong])
+
+  // Update current lyric index
+  useEffect(() => {
+    if (lyrics.length === 0) return
+    
+    const index = lyrics.findIndex((lyric, i) => {
+      const nextLyric = lyrics[i + 1]
+      if (!nextLyric) return currentTime >= lyric.time
+      return currentTime >= lyric.time && currentTime < nextLyric.time
+    })
+    
+    if (index !== -1 && index !== currentLyricIndex) {
+      setCurrentLyricIndex(index)
+    }
+  }, [currentTime, lyrics, currentLyricIndex])
+
+  // Auto scroll lyrics
+  useEffect(() => {
+    if (showLyrics && lyricsContainerRef.current) {
+      const container = lyricsContainerRef.current
+      const activeLine = container.querySelector('.lyric-line.active')
+      if (activeLine) {
+        activeLine.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      }
+    }
+  }, [currentLyricIndex, showLyrics])
+
+  // MediaSession API
+  useEffect(() => {
+    if (!currentSong || !('mediaSession' in navigator)) return
+
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: currentSong.name,
+      artist: currentSong.artist,
+      album: currentSong.album || '',
+      artwork: [
+        { src: currentSong.pic, sizes: '96x96', type: 'image/jpeg' },
+        { src: currentSong.pic, sizes: '128x128', type: 'image/jpeg' },
+        { src: currentSong.pic, sizes: '192x192', type: 'image/jpeg' },
+        { src: currentSong.pic, sizes: '256x256', type: 'image/jpeg' },
+        { src: currentSong.pic, sizes: '384x384', type: 'image/jpeg' },
+        { src: currentSong.pic, sizes: '512x512', type: 'image/jpeg' },
+      ]
+    })
+
+    navigator.mediaSession.setActionHandler('play', () => setIsPlaying(true))
+    navigator.mediaSession.setActionHandler('pause', () => setIsPlaying(false))
+    navigator.mediaSession.setActionHandler('previoustrack', playPrev)
+    navigator.mediaSession.setActionHandler('nexttrack', playNext)
+    navigator.mediaSession.setActionHandler('seekto', (details) => {
+      if (details.seekTime) {
+        audioRef.current.currentTime = details.seekTime
+      }
+    })
+  }, [currentSong])
+
+  // Load lyrics when song changes
+  useEffect(() => {
+    if (!currentSong) {
+      setLyrics([])
+      return
+    }
+
+    const loadLyrics = async () => {
+      try {
+        const lrcText = await getSongLyrics(currentSong.id, currentSong.source)
+        const parsed = parseLyrics(lrcText)
+        setLyrics(parsed)
+        setCurrentLyricIndex(0)
+      } catch (error) {
+        console.error('加载歌词失败:', error)
+        setLyrics([])
+      }
+    }
+
+    loadLyrics()
+  }, [currentSong?.id])
 
   // Search handler
   const handleSearch = async (e) => {
@@ -210,6 +375,12 @@ function App() {
       audioRef.current.src = url
       setIsPlaying(true)
 
+      // 保存到播放历史
+      setPlayHistory(prev => addToHistory(prev, songData))
+      
+      // 保存最后播放的歌曲
+      setLastSong(songData)
+
       if (!fromPlaylist) {
         setPlaylist([songData])
         setCurrentIndex(0)
@@ -223,7 +394,7 @@ function App() {
   }
 
   // Play next song
-  const playNext = () => {
+  const playNext = useCallback(() => {
     if (playlist.length === 0) return
 
     let nextIndex
@@ -236,10 +407,10 @@ function App() {
     if (nextIndex < playlist.length) {
       playSong(playlist[nextIndex], true, nextIndex)
     }
-  }
+  }, [playlist, currentIndex, isShuffle])
 
   // Play previous song
-  const playPrev = () => {
+  const playPrev = useCallback(() => {
     if (playlist.length === 0) return
 
     let prevIndex
@@ -250,7 +421,7 @@ function App() {
     }
 
     playSong(playlist[prevIndex], true, prevIndex)
-  }
+  }, [playlist, currentIndex, isShuffle])
 
   // Format time
   const formatTime = (seconds) => {
@@ -271,7 +442,6 @@ function App() {
   const handleVolumeChange = (e) => {
     const newVolume = parseFloat(e.target.value)
     setVolume(newVolume)
-    audioRef.current.volume = newVolume
   }
 
   // Toggle play/pause
@@ -282,13 +452,23 @@ function App() {
 
   // Toggle favorite
   const toggleFavorite = (song) => {
-    const songId = song.id
-    if (favorites.includes(songId)) {
-      setFavorites(favorites.filter(id => id !== songId))
+    const songData = {
+      id: song.id,
+      name: song.name,
+      artist: song.artist,
+      source: song.source
+    }
+    
+    const isFavorited = favorites.some(f => f.id === song.id)
+    if (isFavorited) {
+      setFavorites(favorites.filter(f => f.id !== song.id))
     } else {
-      setFavorites([...favorites, songId])
+      setFavorites([...favorites, songData])
     }
   }
+
+  // Check if song is favorited
+  const isFavorited = (songId) => favorites.some(f => f.id === songId)
 
   // Play all recommended songs
   const playAllRecommended = () => {
@@ -300,11 +480,126 @@ function App() {
     playSong(songs[0], true, 0)
   }
 
+  // Remove from history
+  const removeFromHistory = (songId) => {
+    setPlayHistory(playHistory.filter(s => s.id !== songId))
+  }
+
+  // Clear all history
+  const clearHistory = () => {
+    setPlayHistory([])
+  }
+
+  // Handle lyric click (seek to time)
+  const handleLyricClick = (time) => {
+    audioRef.current.currentTime = time
+  }
+
+  // ===== Playlist Management Functions =====
+  
+  // Create new playlist
+  const createPlaylist = () => {
+    if (!playlistName.trim()) return
+    
+    const newPlaylist = {
+      id: `playlist_${Date.now()}`,
+      name: playlistName.trim(),
+      songs: [],
+      createdAt: Date.now()
+    }
+    
+    setUserPlaylists([...userPlaylists, newPlaylist])
+    setPlaylistName('')
+    setShowPlaylistModal(false)
+  }
+
+  // Update playlist name
+  const updatePlaylist = () => {
+    if (!playlistName.trim() || !editingPlaylist) return
+    
+    setUserPlaylists(userPlaylists.map(pl => 
+      pl.id === editingPlaylist.id 
+        ? { ...pl, name: playlistName.trim() }
+        : pl
+    ))
+    setPlaylistName('')
+    setEditingPlaylist(null)
+    setShowPlaylistModal(false)
+  }
+
+  // Delete playlist
+  const deletePlaylist = (playlistId) => {
+    setUserPlaylists(userPlaylists.filter(pl => pl.id !== playlistId))
+    if (selectedPlaylistId === playlistId) {
+      setSelectedPlaylistId(null)
+      setCurrentView('home')
+      setActiveView('home')
+    }
+  }
+
+  // Add song to playlist
+  const addSongToPlaylist = (playlistId, song) => {
+    const songData = {
+      id: song.id,
+      name: song.name || song.title,
+      artist: song.artist || song.singer || song.ar?.[0]?.name || '未知歌手',
+      source: song.platform || song.source || SOURCES.NETEASE
+    }
+    
+    setUserPlaylists(userPlaylists.map(pl => {
+      if (pl.id === playlistId) {
+        // Check if song already exists
+        if (pl.songs.some(s => s.id === songData.id)) {
+          return pl
+        }
+        return { ...pl, songs: [...pl.songs, songData] }
+      }
+      return pl
+    }))
+    setShowAddToPlaylist(null)
+  }
+
+  // Remove song from playlist
+  const removeSongFromPlaylist = (playlistId, songId) => {
+    setUserPlaylists(userPlaylists.map(pl => {
+      if (pl.id === playlistId) {
+        return { ...pl, songs: pl.songs.filter(s => s.id !== songId) }
+      }
+      return pl
+    }))
+  }
+
+  // Open edit playlist modal
+  const openEditPlaylist = (playlist) => {
+    setEditingPlaylist(playlist)
+    setPlaylistName(playlist.name)
+    setShowPlaylistModal(true)
+  }
+
+  // Open create playlist modal
+  const openCreatePlaylist = () => {
+    setEditingPlaylist(null)
+    setPlaylistName('')
+    setShowPlaylistModal(true)
+  }
+
+  // View playlist
+  const viewPlaylist = (playlist) => {
+    setSelectedPlaylistId(playlist.id)
+    setCurrentView('playlist')
+    setActiveView('playlists')
+  }
+
+  // Get current selected playlist
+  const currentPlaylist = userPlaylists.find(pl => pl.id === selectedPlaylistId)
+
   // Sidebar navigation items
   const navItems = [
     { id: 'home', icon: <HomeIcon />, label: '发现音乐' },
     { id: 'search', icon: <SearchIcon />, label: '搜索' },
-    { id: 'library', icon: <LibraryIcon />, label: '我的收藏' }
+    { id: 'library', icon: <LibraryIcon />, label: '我的收藏' },
+    { id: 'history', icon: <HistoryIcon />, label: '播放历史' },
+    { id: 'playlists', icon: <FolderIcon />, label: '我的歌单' }
   ]
 
   const sourceTabs = [
@@ -367,8 +662,8 @@ function App() {
       </aside>
 
       {/* Main Content */}
-      <main className="main-content">
-        {/* Search Bar - Always visible */}
+      <main className={`main-content ${showLyrics ? 'with-lyrics' : ''}`}>
+        {/* Search Bar */}
         <header className="header">
           <form className="search-form" onSubmit={handleSearch}>
             <div className="search-container">
@@ -503,16 +798,60 @@ function App() {
                            song.platform === 'kuwo' ? '酷我' :
                            song.platform === 'qq' ? 'QQ' : ''}
                         </span>
-                        <button
-                          className="song-play-btn"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            setPlaylist(searchResults)
-                            playSong(song, true, index)
-                          }}
-                        >
-                          {currentSong?.id === song.id && isPlaying ? <PauseIcon /> : <PlayIcon />}
-                        </button>
+                        <div className="song-actions">
+                          <button
+                            className="song-action-btn"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setShowAddToPlaylist(showAddToPlaylist === song.id ? null : song.id)
+                            }}
+                            title="添加到歌单"
+                          >
+                            <AddIcon />
+                          </button>
+                          {showAddToPlaylist === song.id && (
+                            <div className="add-to-playlist-dropdown">
+                              {userPlaylists.length > 0 ? (
+                                userPlaylists.map(pl => (
+                                  <button
+                                    key={pl.id}
+                                    className="dropdown-item"
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      addSongToPlaylist(pl.id, song)
+                                    }}
+                                  >
+                                    <FolderIcon />
+                                    <span>{pl.name}</span>
+                                  </button>
+                                ))
+                              ) : (
+                                <div className="dropdown-empty">暂无歌单</div>
+                              )}
+                              <button
+                                className="dropdown-item create-new"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  setShowAddToPlaylist(null)
+                                  openCreatePlaylist()
+                                }}
+                              >
+                                <AddIcon />
+                                <span>创建新歌单</span>
+                              </button>
+                            </div>
+                          )}
+                          <button
+                            className="song-action-btn"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setPlaylist(searchResults)
+                              playSong(song, true, index)
+                            }}
+                          >
+                            {currentSong?.id === song.id && isPlaying ? <PauseIcon /> : <PlayIcon />}
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -532,17 +871,364 @@ function App() {
           {currentView === 'library' && (
             <div className="library-view">
               <h2 className="view-title">我的收藏</h2>
-              <div className="empty-state">
-                <div className="empty-icon">
-                  <HeartIcon filled={false} />
+              {favorites.length > 0 ? (
+                <div className="search-results">
+                  <div className="results-header">
+                    <span className="results-count">{favorites.length} 首收藏</span>
+                    <button
+                      className="play-all-btn small"
+                      onClick={() => {
+                        setPlaylist(favorites)
+                        playSong(favorites[0], true, 0)
+                      }}
+                    >
+                      <PlayIcon />
+                      <span>播放全部</span>
+                    </button>
+                  </div>
+                  <div className="song-list">
+                    {favorites.map((song, index) => (
+                      <div
+                        key={song.id}
+                        className={`song-item ${currentSong?.id === song.id ? 'playing' : ''}`}
+                        onClick={() => {
+                          setPlaylist(favorites)
+                          playSong(song, true, index)
+                        }}
+                      >
+                        <span className="song-index">{index + 1}</span>
+                        <img
+                          src={getSongPic(song.id, song.source)}
+                          alt={song.name}
+                          className="song-cover"
+                          onError={(e) => { e.target.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%23282828" width="100" height="100"/><text x="50" y="55" text-anchor="middle" fill="%23666" font-size="40">♪</text></svg>' }}
+                        />
+                        <div className="song-info">
+                          <span className="song-name">{song.name}</span>
+                          <span className="song-artist">{song.artist}</span>
+                        </div>
+                        <button
+                          className="song-action-btn"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            toggleFavorite(song)
+                          }}
+                          title="取消收藏"
+                        >
+                          <HeartIcon filled={true} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <h3>暂无收藏</h3>
-                <p>播放歌曲时点击爱心即可收藏</p>
+              ) : (
+                <div className="empty-state">
+                  <div className="empty-icon">
+                    <HeartIcon filled={false} />
+                  </div>
+                  <h3>暂无收藏</h3>
+                  <p>播放歌曲时点击爱心即可收藏</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {currentView === 'history' && (
+            <div className="history-view">
+              <div className="section-header">
+                <h2 className="view-title">播放历史</h2>
+                {playHistory.length > 0 && (
+                  <button className="clear-btn" onClick={clearHistory}>
+                    清空历史
+                  </button>
+                )}
               </div>
+              {playHistory.length > 0 ? (
+                <div className="song-list">
+                  {playHistory.map((song, index) => (
+                    <div
+                      key={`${song.id}-${index}`}
+                      className={`song-item ${currentSong?.id === song.id ? 'playing' : ''}`}
+                      onClick={() => {
+                        setPlaylist(playHistory)
+                        playSong(song, true, index)
+                      }}
+                    >
+                      <span className="song-index">{index + 1}</span>
+                      <img
+                        src={getSongPic(song.id, song.source)}
+                        alt={song.name}
+                        className="song-cover"
+                        onError={(e) => { e.target.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%23282828" width="100" height="100"/><text x="50" y="55" text-anchor="middle" fill="%23666" font-size="40">♪</text></svg>' }}
+                      />
+                      <div className="song-info">
+                        <span className="song-name">{song.name}</span>
+                        <span className="song-artist">{song.artist}</span>
+                      </div>
+                      <button
+                        className="song-action-btn delete"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          removeFromHistory(song.id)
+                        }}
+                        title="删除"
+                      >
+                        <DeleteIcon />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="empty-state">
+                  <div className="empty-icon">
+                    <HistoryIcon />
+                  </div>
+                  <h3>暂无播放历史</h3>
+                  <p>播放的歌曲将会显示在这里</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {currentView === 'playlists' && (
+            <div className="playlists-view">
+              <div className="section-header">
+                <h2 className="view-title">我的歌单</h2>
+                <button className="play-all-btn" onClick={openCreatePlaylist}>
+                  <AddIcon />
+                  <span>创建歌单</span>
+                </button>
+              </div>
+              {userPlaylists.length > 0 ? (
+                <div className="playlists-grid">
+                  {userPlaylists.map(pl => (
+                    <div
+                      key={pl.id}
+                      className="playlist-card"
+                      onClick={() => viewPlaylist(pl)}
+                    >
+                      <div className="playlist-card-cover">
+                        {pl.songs.length > 0 ? (
+                          <img
+                            src={getSongPic(pl.songs[0].id, pl.songs[0].source)}
+                            alt={pl.name}
+                            onError={(e) => { e.target.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%23282828" width="100" height="100"/><text x="50" y="55" text-anchor="middle" fill="%23666" font-size="40">♪</text></svg>' }}
+                          />
+                        ) : (
+                          <div className="playlist-empty-cover">
+                            <FolderIcon />
+                          </div>
+                        )}
+                        <div className="playlist-card-actions">
+                          <button
+                            className="playlist-card-btn"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              openEditPlaylist(pl)
+                            }}
+                            title="编辑"
+                          >
+                            <EditIcon />
+                          </button>
+                          <button
+                            className="playlist-card-btn delete"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              deletePlaylist(pl.id)
+                            }}
+                            title="删除"
+                          >
+                            <DeleteIcon />
+                          </button>
+                        </div>
+                      </div>
+                      <div className="playlist-card-info">
+                        <div className="playlist-card-name">{pl.name}</div>
+                        <div className="playlist-card-count">{pl.songs.length} 首歌曲</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="empty-state">
+                  <div className="empty-icon">
+                    <FolderIcon />
+                  </div>
+                  <h3>暂无歌单</h3>
+                  <p>创建你的第一个歌单吧</p>
+                  <button className="create-playlist-btn" onClick={openCreatePlaylist}>
+                    <AddIcon />
+                    <span>创建歌单</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {currentView === 'playlist' && currentPlaylist && (
+            <div className="playlist-detail-view">
+              <div className="playlist-header">
+                <div className="playlist-cover-large">
+                  {currentPlaylist.songs.length > 0 ? (
+                    <img
+                      src={getSongPic(currentPlaylist.songs[0].id, currentPlaylist.songs[0].source)}
+                      alt={currentPlaylist.name}
+                      onError={(e) => { e.target.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%23282828" width="100" height="100"/><text x="50" y="55" text-anchor="middle" fill="%23666" font-size="40">♪</text></svg>' }}
+                    />
+                  ) : (
+                    <div className="playlist-empty-cover large">
+                      <FolderIcon />
+                    </div>
+                  )}
+                </div>
+                <div className="playlist-info">
+                  <span className="playlist-label">歌单</span>
+                  <h1 className="playlist-name">{currentPlaylist.name}</h1>
+                  <span className="playlist-meta">{currentPlaylist.songs.length} 首歌曲</span>
+                  <div className="playlist-actions">
+                    {currentPlaylist.songs.length > 0 && (
+                      <button
+                        className="play-all-btn large"
+                        onClick={() => {
+                          setPlaylist(currentPlaylist.songs)
+                          playSong(currentPlaylist.songs[0], true, 0)
+                        }}
+                      >
+                        <PlayIcon />
+                        <span>播放全部</span>
+                      </button>
+                    )}
+                    <button
+                      className="icon-btn"
+                      onClick={() => openEditPlaylist(currentPlaylist)}
+                      title="编辑歌单"
+                    >
+                      <EditIcon />
+                    </button>
+                    <button
+                      className="icon-btn delete"
+                      onClick={() => deletePlaylist(currentPlaylist.id)}
+                      title="删除歌单"
+                    >
+                      <DeleteIcon />
+                    </button>
+                  </div>
+                </div>
+              </div>
+              {currentPlaylist.songs.length > 0 ? (
+                <div className="song-list">
+                  {currentPlaylist.songs.map((song, index) => (
+                    <div
+                      key={song.id}
+                      className={`song-item ${currentSong?.id === song.id ? 'playing' : ''}`}
+                      onClick={() => {
+                        setPlaylist(currentPlaylist.songs)
+                        playSong(song, true, index)
+                      }}
+                    >
+                      <span className="song-index">{index + 1}</span>
+                      <img
+                        src={getSongPic(song.id, song.source)}
+                        alt={song.name}
+                        className="song-cover"
+                        onError={(e) => { e.target.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%23282828" width="100" height="100"/><text x="50" y="55" text-anchor="middle" fill="%23666" font-size="40">♪</text></svg>' }}
+                      />
+                      <div className="song-info">
+                        <span className="song-name">{song.name}</span>
+                        <span className="song-artist">{song.artist}</span>
+                      </div>
+                      <button
+                        className="song-action-btn delete"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          removeSongFromPlaylist(currentPlaylist.id, song.id)
+                        }}
+                        title="从歌单移除"
+                      >
+                        <DeleteIcon />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="empty-state">
+                  <div className="empty-icon">
+                    <MusicNoteIcon />
+                  </div>
+                  <h3>歌单是空的</h3>
+                  <p>搜索歌曲并添加到这个歌单</p>
+                </div>
+              )}
             </div>
           )}
         </div>
       </main>
+
+      {/* Playlist Modal */}
+      {showPlaylistModal && (
+        <div className="modal-overlay" onClick={() => setShowPlaylistModal(false)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>{editingPlaylist ? '编辑歌单' : '创建歌单'}</h3>
+              <button className="modal-close" onClick={() => setShowPlaylistModal(false)}>
+                <CloseIcon />
+              </button>
+            </div>
+            <div className="modal-body">
+              <input
+                type="text"
+                className="modal-input"
+                placeholder="歌单名称"
+                value={playlistName}
+                onChange={(e) => setPlaylistName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    editingPlaylist ? updatePlaylist() : createPlaylist()
+                  }
+                }}
+                autoFocus
+              />
+            </div>
+            <div className="modal-footer">
+              <button className="modal-btn cancel" onClick={() => setShowPlaylistModal(false)}>
+                取消
+              </button>
+              <button
+                className="modal-btn confirm"
+                onClick={editingPlaylist ? updatePlaylist : createPlaylist}
+                disabled={!playlistName.trim()}
+              >
+                {editingPlaylist ? '保存' : '创建'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Lyrics Panel */}
+      {showLyrics && currentSong && (
+        <aside className="lyrics-panel">
+          <div className="lyrics-header">
+            <h3>歌词</h3>
+            <button className="lyrics-close-btn" onClick={() => setShowLyrics(false)}>×</button>
+          </div>
+          <div className="lyrics-content" ref={lyricsContainerRef}>
+            {lyrics.length > 0 ? (
+              lyrics.map((lyric, index) => (
+                <div
+                  key={index}
+                  className={`lyric-line ${index === currentLyricIndex ? 'active' : ''}`}
+                  onClick={() => handleLyricClick(lyric.time)}
+                >
+                  {lyric.text}
+                </div>
+              ))
+            ) : (
+              <div className="no-lyrics">暂无歌词</div>
+            )}
+          </div>
+        </aside>
+      )}
 
       {/* Player Bar */}
       <footer className="player-bar">
@@ -561,10 +1247,10 @@ function App() {
                 <div className="player-artist">{currentSong.artist}</div>
               </div>
               <button
-                className={`player-like-btn ${favorites.includes(currentSong.id) ? 'active' : ''}`}
+                className={`player-like-btn ${isFavorited(currentSong.id) ? 'active' : ''}`}
                 onClick={() => toggleFavorite(currentSong)}
               >
-                <HeartIcon filled={favorites.includes(currentSong.id)} />
+                <HeartIcon filled={isFavorited(currentSong.id)} />
               </button>
             </>
           ) : (
@@ -627,8 +1313,15 @@ function App() {
           </div>
         </div>
 
-        {/* Right - Volume */}
+        {/* Right - Volume & Lyrics */}
         <div className="player-right">
+          <button
+            className={`player-control-btn ${showLyrics ? 'active' : ''}`}
+            onClick={() => setShowLyrics(!showLyrics)}
+            title="歌词"
+          >
+            <LyricsIcon />
+          </button>
           <button
             className="player-control-btn"
             onClick={() => setVolume(volume > 0 ? 0 : 0.7)}
@@ -649,6 +1342,182 @@ function App() {
           </div>
         </div>
       </footer>
+
+      {/* Mobile Bottom Navigation */}
+      {isMobile && (
+        <nav className="mobile-nav">
+          {[
+            { id: 'home', icon: <HomeIcon />, label: '首页' },
+            { id: 'search', icon: <SearchIcon />, label: '搜索' },
+            { id: 'library', icon: <LibraryIcon />, label: '收藏' },
+            { id: 'playlists', icon: <FolderIcon />, label: '歌单' }
+          ].map(item => (
+            <button
+              key={item.id}
+              className={`mobile-nav-item ${activeView === item.id ? 'active' : ''}`}
+              onClick={() => {
+                setActiveView(item.id)
+                setCurrentView(item.id)
+              }}
+            >
+              {item.icon}
+              <span>{item.label}</span>
+            </button>
+          ))}
+        </nav>
+      )}
+
+      {/* Full Screen Player (Mobile) */}
+      {showFullPlayer && currentSong && (
+        <div
+          className="full-player"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
+          <div className="full-player-header">
+            <button
+              className="full-player-close"
+              onClick={() => setShowFullPlayer(false)}
+            >
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/>
+              </svg>
+            </button>
+            <span className="full-player-title">正在播放</span>
+            <button
+              className="full-player-action"
+              onClick={() => setShowLyrics(!showLyrics)}
+            >
+              <LyricsIcon />
+            </button>
+          </div>
+
+          <div className="full-player-content">
+            {showLyrics && lyrics.length > 0 ? (
+              <div className="full-player-lyrics" ref={lyricsContainerRef}>
+                {lyrics.map((lyric, index) => (
+                  <div
+                    key={index}
+                    className={`full-lyric-line ${index === currentLyricIndex ? 'active' : ''}`}
+                    onClick={() => handleLyricClick(lyric.time)}
+                  >
+                    {lyric.text}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="full-player-cover-container">
+                <img
+                  src={currentSong.pic}
+                  alt={currentSong.name}
+                  className={`full-player-cover ${isPlaying ? 'spinning' : ''}`}
+                  onError={(e) => { e.target.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%23282828" width="100" height="100"/><text x="50" y="55" text-anchor="middle" fill="%23666" font-size="40">♪</text></svg>' }}
+                />
+              </div>
+            )}
+
+            <div className="full-player-info">
+              <h2 className="full-player-song-name">{currentSong.name}</h2>
+              <p className="full-player-artist">{currentSong.artist}</p>
+            </div>
+
+            <div className="full-player-progress">
+              <div className="progress-container" onClick={handleProgressClick}>
+                <div className="progress-bg" />
+                <div className="progress-bar" style={{ width: `${progress}%` }} />
+                <div className="progress-handle" style={{ left: `${progress}%` }} />
+              </div>
+              <div className="progress-times">
+                <span>{formatTime(currentTime)}</span>
+                <span>{formatTime(duration)}</span>
+              </div>
+            </div>
+
+            <div className="full-player-controls">
+              <button
+                className={`full-control-btn ${isShuffle ? 'active' : ''}`}
+                onClick={() => setIsShuffle(!isShuffle)}
+              >
+                <ShuffleIcon />
+              </button>
+              <button className="full-control-btn" onClick={playPrev}>
+                <PrevIcon />
+              </button>
+              <button
+                className={`full-control-btn play ${isLoading ? 'loading' : ''}`}
+                onClick={togglePlay}
+              >
+                {isLoading ? (
+                  <div className="btn-spinner" />
+                ) : isPlaying ? (
+                  <PauseIcon />
+                ) : (
+                  <PlayIcon />
+                )}
+              </button>
+              <button className="full-control-btn" onClick={playNext}>
+                <NextIcon />
+              </button>
+              <button
+                className={`full-control-btn ${isRepeat ? 'active' : ''}`}
+                onClick={() => setIsRepeat(!isRepeat)}
+              >
+                <RepeatIcon />
+              </button>
+            </div>
+
+            <div className="full-player-actions">
+              <button
+                className={`full-action-btn ${isFavorited(currentSong.id) ? 'active' : ''}`}
+                onClick={() => toggleFavorite(currentSong)}
+              >
+                <HeartIcon filled={isFavorited(currentSong.id)} />
+              </button>
+            </div>
+
+            <p className="swipe-hint">← 左右滑动切换歌曲 →</p>
+          </div>
+        </div>
+      )}
+
+      {/* Mobile Mini Player (clickable to expand) */}
+      {isMobile && currentSong && !showFullPlayer && (
+        <div
+          className="mobile-mini-player"
+          onClick={() => setShowFullPlayer(true)}
+        >
+          <img
+            src={currentSong.pic}
+            alt={currentSong.name}
+            className="mini-player-cover"
+            onError={(e) => { e.target.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%23282828" width="100" height="100"/><text x="50" y="55" text-anchor="middle" fill="%23666" font-size="40">♪</text></svg>' }}
+          />
+          <div className="mini-player-info">
+            <span className="mini-player-name">{currentSong.name}</span>
+            <span className="mini-player-artist">{currentSong.artist}</span>
+          </div>
+          <button
+            className="mini-player-btn"
+            onClick={(e) => {
+              e.stopPropagation()
+              togglePlay()
+            }}
+          >
+            {isPlaying ? <PauseIcon /> : <PlayIcon />}
+          </button>
+          <button
+            className="mini-player-btn"
+            onClick={(e) => {
+              e.stopPropagation()
+              playNext()
+            }}
+          >
+            <NextIcon />
+          </button>
+          <div className="mini-player-progress" style={{ width: `${progress}%` }} />
+        </div>
+      )}
     </div>
   )
 }
