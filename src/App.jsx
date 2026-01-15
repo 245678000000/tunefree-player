@@ -98,6 +98,26 @@ const CloseIcon = () => (
   <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
 )
 
+const QueueIcon = () => (
+  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M15 6H3v2h12V6zm0 4H3v2h12v-2zM3 16h8v-2H3v2zM17 6v8.18c-.31-.11-.65-.18-1-.18-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3V8h3V6h-5z"/></svg>
+)
+
+const TimerIcon = () => (
+  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M15 1H9v2h6V1zm-4 13h2V8h-2v6zm8.03-6.61l1.42-1.42c-.43-.51-.9-.99-1.41-1.41l-1.42 1.42C16.07 4.74 14.12 4 12 4c-4.97 0-9 4.03-9 9s4.02 9 9 9 9-4.03 9-9c0-2.12-.74-4.07-1.97-5.61zM12 20c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>
+)
+
+const DragIcon = () => (
+  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11 18c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm-2-8c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0-6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm6 4c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
+)
+
+const KeyboardIcon = () => (
+  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 5H4c-1.1 0-1.99.9-1.99 2L2 17c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm-9 3h2v2h-2V8zm0 3h2v2h-2v-2zM8 8h2v2H8V8zm0 3h2v2H8v-2zm-1 2H5v-2h2v2zm0-3H5V8h2v2zm9 7H8v-2h8v2zm0-4h-2v-2h2v2zm0-3h-2V8h2v2zm3 3h-2v-2h2v2zm0-3h-2V8h2v2z"/></svg>
+)
+
+const VisualizerIcon = () => (
+  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm7-.17v6.34L7.83 13H5v-2h2.83L10 8.83zM16.5 12c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+)
+
 function App() {
   // Navigation state
   const [activeView, setActiveView] = useState('home')
@@ -145,11 +165,28 @@ function App() {
   const [showFullPlayer, setShowFullPlayer] = useState(false)
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
 
+  // Queue & Timer state
+  const [showQueue, setShowQueue] = useState(false)
+  const [showTimerModal, setShowTimerModal] = useState(false)
+  const [sleepTimer, setSleepTimer] = useState(null)
+  const [timerRemaining, setTimerRemaining] = useState(0)
+  const [showSearchSuggestions, setShowSearchSuggestions] = useState(false)
+  
+  // Search history (persisted)
+  const [searchHistory, setSearchHistory] = useLocalStorage(STORAGE_KEYS.SEARCH_HISTORY, [])
+
   // Audio ref
   const audioRef = useRef(new Audio())
   const lyricsContainerRef = useRef(null)
   const touchStartX = useRef(0)
   const touchEndX = useRef(0)
+  
+  // Audio visualizer refs
+  const canvasRef = useRef(null)
+  const audioContextRef = useRef(null)
+  const analyserRef = useRef(null)
+  const animationRef = useRef(null)
+  const [showVisualizer, setShowVisualizer] = useState(false)
 
   // Handle window resize for mobile detection
   useEffect(() => {
@@ -159,6 +196,177 @@ function App() {
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
   }, [])
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // 不在输入框中时才响应快捷键
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return
+
+      switch (e.code) {
+        case 'Space':
+          e.preventDefault()
+          togglePlay()
+          break
+        case 'ArrowLeft':
+          if (e.shiftKey) {
+            // Shift + Left: 上一首
+            playPrev()
+          } else {
+            // Left: 快退 5 秒
+            if (audioRef.current) {
+              audioRef.current.currentTime = Math.max(0, audioRef.current.currentTime - 5)
+            }
+          }
+          break
+        case 'ArrowRight':
+          if (e.shiftKey) {
+            // Shift + Right: 下一首
+            playNext()
+          } else {
+            // Right: 快进 5 秒
+            if (audioRef.current) {
+              audioRef.current.currentTime = Math.min(duration, audioRef.current.currentTime + 5)
+            }
+          }
+          break
+        case 'ArrowUp':
+          e.preventDefault()
+          setVolume(prev => Math.min(1, prev + 0.1))
+          break
+        case 'ArrowDown':
+          e.preventDefault()
+          setVolume(prev => Math.max(0, prev - 0.1))
+          break
+        case 'KeyM':
+          // M: 静音切换
+          setVolume(prev => prev > 0 ? 0 : 0.7)
+          break
+        case 'KeyL':
+          // L: 显示歌词
+          if (currentSong) setShowLyrics(prev => !prev)
+          break
+        case 'KeyQ':
+          // Q: 显示队列
+          setShowQueue(prev => !prev)
+          break
+        case 'KeyR':
+          // R: 单曲循环
+          setIsRepeat(prev => !prev)
+          break
+        case 'KeyS':
+          // S: 随机播放
+          setIsShuffle(prev => !prev)
+          break
+        default:
+          break
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [currentSong, duration])
+
+  // Sleep timer logic
+  useEffect(() => {
+    if (sleepTimer === null) {
+      setTimerRemaining(0)
+      return
+    }
+
+    const endTime = sleepTimer
+    const interval = setInterval(() => {
+      const remaining = Math.max(0, endTime - Date.now())
+      setTimerRemaining(remaining)
+
+      if (remaining === 0) {
+        // 时间到，暂停播放
+        setIsPlaying(false)
+        setSleepTimer(null)
+        clearInterval(interval)
+      }
+    }, 1000)
+
+    return () => clearInterval(interval)
+  }, [sleepTimer])
+
+  // Audio visualizer
+  useEffect(() => {
+    if (!showVisualizer || !canvasRef.current) return
+
+    const canvas = canvasRef.current
+    const ctx = canvas.getContext('2d')
+    
+    // 设置 canvas 尺寸
+    const resizeCanvas = () => {
+      canvas.width = canvas.offsetWidth * window.devicePixelRatio
+      canvas.height = canvas.offsetHeight * window.devicePixelRatio
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio)
+    }
+    resizeCanvas()
+
+    // 初始化 Audio Context
+    if (!audioContextRef.current) {
+      try {
+        audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)()
+        analyserRef.current = audioContextRef.current.createAnalyser()
+        analyserRef.current.fftSize = 256
+        
+        const source = audioContextRef.current.createMediaElementSource(audioRef.current)
+        source.connect(analyserRef.current)
+        analyserRef.current.connect(audioContextRef.current.destination)
+      } catch (e) {
+        console.error('Audio visualizer not supported:', e)
+        return
+      }
+    }
+
+    const analyser = analyserRef.current
+    const bufferLength = analyser.frequencyBinCount
+    const dataArray = new Uint8Array(bufferLength)
+
+    const draw = () => {
+      const width = canvas.offsetWidth
+      const height = canvas.offsetHeight
+
+      analyser.getByteFrequencyData(dataArray)
+
+      // 清除画布
+      ctx.clearRect(0, 0, width, height)
+
+      // 绘制频谱
+      const barWidth = (width / bufferLength) * 2.5
+      let x = 0
+
+      for (let i = 0; i < bufferLength; i++) {
+        const barHeight = (dataArray[i] / 255) * height * 0.8
+
+        // 渐变色
+        const hue = (i / bufferLength) * 120 + 100 // 绿色到蓝色
+        ctx.fillStyle = `hsla(${hue}, 70%, 50%, 0.8)`
+
+        // 绘制圆角条
+        const radius = barWidth / 2
+        ctx.beginPath()
+        ctx.roundRect(x, height - barHeight, barWidth - 2, barHeight, radius)
+        ctx.fill()
+
+        x += barWidth
+      }
+
+      animationRef.current = requestAnimationFrame(draw)
+    }
+
+    if (isPlaying) {
+      draw()
+    }
+
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current)
+      }
+    }
+  }, [showVisualizer, isPlaying])
 
   // Touch gesture handlers for mobile
   const handleTouchStart = (e) => {
@@ -320,37 +528,8 @@ function App() {
   const handleSearch = async (e) => {
     e.preventDefault()
     if (!searchQuery.trim()) return
-
-    setIsSearching(true)
-    setSearchError('')
-    setSearchResults([])
-    setCurrentView('search')
-    setActiveView('search')
-
-    try {
-      let result
-      if (searchSource === 'all') {
-        result = await aggregateSearch(searchQuery)
-      } else {
-        result = await searchSongs(searchQuery, searchSource, 30)
-      }
-
-      if (result.code === 200 && result.data) {
-        const songs = result.data.results || result.data.list || []
-        setSearchResults(songs)
-
-        if (songs.length === 0) {
-          setSearchError('未找到相关歌曲，请尝试其他关键词')
-        }
-      } else {
-        setSearchError(result.message || '搜索失败，请稍后再试')
-      }
-    } catch (error) {
-      console.error('搜索失败:', error)
-      setSearchError('搜索失败，请检查网络连接后重试')
-    } finally {
-      setIsSearching(false)
-    }
+    setShowSearchSuggestions(false)
+    handleSearchWithQuery(searchQuery)
   }
 
   // Play song
@@ -593,6 +772,152 @@ function App() {
   // Get current selected playlist
   const currentPlaylist = userPlaylists.find(pl => pl.id === selectedPlaylistId)
 
+  // ===== Search History Functions =====
+  
+  // Add to search history
+  const addToSearchHistory = (query) => {
+    if (!query.trim()) return
+    const filtered = searchHistory.filter(q => q !== query)
+    setSearchHistory([query, ...filtered].slice(0, 10)) // 保留最近 10 条
+  }
+
+  // Remove from search history
+  const removeFromSearchHistory = (query) => {
+    setSearchHistory(searchHistory.filter(q => q !== query))
+  }
+
+  // Clear search history
+  const clearSearchHistory = () => {
+    setSearchHistory([])
+  }
+
+  // Use search suggestion
+  const useSearchSuggestion = (query) => {
+    setSearchQuery(query)
+    setShowSearchSuggestions(false)
+    // 自动触发搜索
+    handleSearchWithQuery(query)
+  }
+
+  // Handle search with specific query
+  const handleSearchWithQuery = async (query) => {
+    if (!query.trim()) return
+
+    setIsSearching(true)
+    setSearchError('')
+    setSearchResults([])
+    setCurrentView('search')
+    setActiveView('search')
+    addToSearchHistory(query)
+
+    try {
+      let result
+      if (searchSource === 'all') {
+        result = await aggregateSearch(query)
+      } else {
+        result = await searchSongs(query, searchSource, 30)
+      }
+
+      if (result.code === 200 && result.data) {
+        const songs = result.data.results || result.data.list || []
+        setSearchResults(songs)
+
+        if (songs.length === 0) {
+          setSearchError('未找到相关歌曲，请尝试其他关键词')
+        }
+      } else {
+        setSearchError(result.message || '搜索失败，请稍后再试')
+      }
+    } catch (error) {
+      console.error('搜索失败:', error)
+      setSearchError('搜索失败，请检查网络连接后重试')
+    } finally {
+      setIsSearching(false)
+    }
+  }
+
+  // ===== Queue Management Functions =====
+  
+  // Remove song from queue
+  const removeFromQueue = (index) => {
+    if (index === currentIndex) {
+      // 如果删除的是当前播放的歌曲，播放下一首
+      if (playlist.length > 1) {
+        const newPlaylist = playlist.filter((_, i) => i !== index)
+        setPlaylist(newPlaylist)
+        const newIndex = index >= newPlaylist.length ? 0 : index
+        setCurrentIndex(newIndex)
+        playSong(newPlaylist[newIndex], true, newIndex)
+      } else {
+        // 只剩一首，停止播放
+        setPlaylist([])
+        setCurrentSong(null)
+        setIsPlaying(false)
+        setCurrentIndex(-1)
+      }
+    } else {
+      const newPlaylist = playlist.filter((_, i) => i !== index)
+      setPlaylist(newPlaylist)
+      // 更新 currentIndex
+      if (index < currentIndex) {
+        setCurrentIndex(currentIndex - 1)
+      }
+    }
+  }
+
+  // Move song in queue (drag & drop)
+  const moveInQueue = (fromIndex, toIndex) => {
+    const newPlaylist = [...playlist]
+    const [movedItem] = newPlaylist.splice(fromIndex, 1)
+    newPlaylist.splice(toIndex, 0, movedItem)
+    setPlaylist(newPlaylist)
+    
+    // 更新 currentIndex
+    if (fromIndex === currentIndex) {
+      setCurrentIndex(toIndex)
+    } else if (fromIndex < currentIndex && toIndex >= currentIndex) {
+      setCurrentIndex(currentIndex - 1)
+    } else if (fromIndex > currentIndex && toIndex <= currentIndex) {
+      setCurrentIndex(currentIndex + 1)
+    }
+  }
+
+  // Clear queue (except current song)
+  const clearQueue = () => {
+    if (currentSong) {
+      setPlaylist([currentSong])
+      setCurrentIndex(0)
+    } else {
+      setPlaylist([])
+      setCurrentIndex(-1)
+    }
+  }
+
+  // ===== Sleep Timer Functions =====
+  
+  // Start sleep timer (minutes)
+  const startSleepTimer = (minutes) => {
+    if (minutes <= 0) {
+      setSleepTimer(null)
+      return
+    }
+    setSleepTimer(Date.now() + minutes * 60 * 1000)
+    setShowTimerModal(false)
+  }
+
+  // Cancel sleep timer
+  const cancelSleepTimer = () => {
+    setSleepTimer(null)
+  }
+
+  // Format timer remaining
+  const formatTimerRemaining = (ms) => {
+    const totalSeconds = Math.ceil(ms / 1000)
+    const minutes = Math.floor(totalSeconds / 60)
+    const seconds = totalSeconds % 60
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`
+  }
+
   // Sidebar navigation items
   const navItems = [
     { id: 'home', icon: <HomeIcon />, label: '发现音乐' },
@@ -674,7 +999,47 @@ function App() {
                 placeholder="搜索歌曲、歌手、专辑..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                onFocus={() => setShowSearchSuggestions(true)}
+                onBlur={() => setTimeout(() => setShowSearchSuggestions(false), 200)}
               />
+              {/* Search History Dropdown */}
+              {showSearchSuggestions && searchHistory.length > 0 && (
+                <div className="search-history-dropdown">
+                  <div className="search-history-header">
+                    <span>搜索历史</span>
+                    <button
+                      type="button"
+                      className="clear-history-btn"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        clearSearchHistory()
+                      }}
+                    >
+                      清空
+                    </button>
+                  </div>
+                  {searchHistory.map((query, index) => (
+                    <div
+                      key={index}
+                      className="search-history-item"
+                      onClick={() => useSearchSuggestion(query)}
+                    >
+                      <HistoryIcon />
+                      <span>{query}</span>
+                      <button
+                        type="button"
+                        className="remove-history-btn"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          removeFromSearchHistory(query)
+                        }}
+                      >
+                        <CloseIcon />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
             <div className="source-tabs">
               {sourceTabs.map(tab => (
@@ -1205,6 +1570,103 @@ function App() {
         </div>
       )}
 
+      {/* Queue Panel */}
+      {showQueue && (
+        <aside className="queue-panel">
+          <div className="queue-header">
+            <h3>播放队列</h3>
+            <div className="queue-actions">
+              <button className="queue-clear-btn" onClick={clearQueue} title="清空队列">
+                清空
+              </button>
+              <button className="queue-close-btn" onClick={() => setShowQueue(false)}>
+                <CloseIcon />
+              </button>
+            </div>
+          </div>
+          <div className="queue-content">
+            {playlist.length > 0 ? (
+              playlist.map((song, index) => (
+                <div
+                  key={`${song.id}-${index}`}
+                  className={`queue-item ${index === currentIndex ? 'playing' : ''}`}
+                  onClick={() => playSong(song, true, index)}
+                >
+                  <div className="queue-item-drag">
+                    <DragIcon />
+                  </div>
+                  <img
+                    src={getSongPic(song.id, song.source)}
+                    alt={song.name}
+                    className="queue-item-cover"
+                    onError={(e) => { e.target.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%23282828" width="100" height="100"/><text x="50" y="55" text-anchor="middle" fill="%23666" font-size="40">♪</text></svg>' }}
+                  />
+                  <div className="queue-item-info">
+                    <span className="queue-item-name">{song.name}</span>
+                    <span className="queue-item-artist">{song.artist}</span>
+                  </div>
+                  {index === currentIndex && isPlaying && (
+                    <div className="queue-item-playing">
+                      <span></span><span></span><span></span>
+                    </div>
+                  )}
+                  <button
+                    className="queue-item-remove"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      removeFromQueue(index)
+                    }}
+                    title="移除"
+                  >
+                    <CloseIcon />
+                  </button>
+                </div>
+              ))
+            ) : (
+              <div className="queue-empty">
+                <QueueIcon />
+                <p>队列是空的</p>
+              </div>
+            )}
+          </div>
+          <div className="queue-footer">
+            <span>{playlist.length} 首歌曲</span>
+          </div>
+        </aside>
+      )}
+
+      {/* Sleep Timer Modal */}
+      {showTimerModal && (
+        <div className="modal-overlay" onClick={() => setShowTimerModal(false)}>
+          <div className="modal timer-modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>睡眠定时器</h3>
+              <button className="modal-close" onClick={() => setShowTimerModal(false)}>
+                <CloseIcon />
+              </button>
+            </div>
+            <div className="modal-body timer-options">
+              {sleepTimer && (
+                <div className="timer-current">
+                  <span>剩余时间：{formatTimerRemaining(timerRemaining)}</span>
+                  <button className="timer-cancel-btn" onClick={cancelSleepTimer}>
+                    取消定时
+                  </button>
+                </div>
+              )}
+              <div className="timer-presets">
+                <button onClick={() => startSleepTimer(15)}>15 分钟</button>
+                <button onClick={() => startSleepTimer(30)}>30 分钟</button>
+                <button onClick={() => startSleepTimer(45)}>45 分钟</button>
+                <button onClick={() => startSleepTimer(60)}>1 小时</button>
+                <button onClick={() => startSleepTimer(90)}>1.5 小时</button>
+                <button onClick={() => startSleepTimer(120)}>2 小时</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Lyrics Panel */}
       {showLyrics && currentSong && (
         <aside className="lyrics-panel">
@@ -1302,6 +1764,9 @@ function App() {
               <RepeatIcon />
             </button>
           </div>
+          {showVisualizer && (
+            <canvas ref={canvasRef} className="audio-visualizer" />
+          )}
           <div className="player-progress">
             <span className="progress-time">{formatTime(currentTime)}</span>
             <div className="progress-container" onClick={handleProgressClick}>
@@ -1316,15 +1781,40 @@ function App() {
         {/* Right - Volume & Lyrics */}
         <div className="player-right">
           <button
+            className={`player-control-btn ${showQueue ? 'active' : ''}`}
+            onClick={() => setShowQueue(!showQueue)}
+            title="播放队列 (Q)"
+          >
+            <QueueIcon />
+          </button>
+          <button
+            className={`player-control-btn ${sleepTimer ? 'active timer-active' : ''}`}
+            onClick={() => setShowTimerModal(true)}
+            title="睡眠定时器"
+          >
+            <TimerIcon />
+            {sleepTimer && (
+              <span className="timer-badge">{formatTimerRemaining(timerRemaining)}</span>
+            )}
+          </button>
+          <button
+            className={`player-control-btn ${showVisualizer ? 'active' : ''}`}
+            onClick={() => setShowVisualizer(!showVisualizer)}
+            title="可视化"
+          >
+            <VisualizerIcon />
+          </button>
+          <button
             className={`player-control-btn ${showLyrics ? 'active' : ''}`}
             onClick={() => setShowLyrics(!showLyrics)}
-            title="歌词"
+            title="歌词 (L)"
           >
             <LyricsIcon />
           </button>
           <button
             className="player-control-btn"
             onClick={() => setVolume(volume > 0 ? 0 : 0.7)}
+            title="静音 (M)"
           >
             {volume > 0 ? <VolumeIcon /> : <VolumeMuteIcon />}
           </button>
