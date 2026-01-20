@@ -680,8 +680,11 @@ body {
   align-items: center;
   padding: 0 16px;
   z-index: 100;
+  position: relative;
+  overflow: hidden;
 }
 
+/* Player Left - Current Song */
 /* Player Left - Current Song */
 .player-left {
   display: flex;
@@ -689,6 +692,8 @@ body {
   width: 30%;
   min-width: 180px;
   gap: 14px;
+  position: relative;
+  z-index: 1;
 }
 
 .player-cover {
@@ -758,6 +763,7 @@ body {
 }
 
 /* Player Center - Controls */
+/* Player Center - Controls */
 .player-center {
   flex: 1;
   display: flex;
@@ -766,6 +772,8 @@ body {
   gap: 8px;
   max-width: 720px;
   margin: 0 auto;
+  position: relative;
+  z-index: 1;
 }
 
 .player-controls {
@@ -891,6 +899,8 @@ body {
   justify-content: flex-end;
   width: 30%;
   gap: 8px;
+  position: relative;
+  z-index: 1;
 }
 
 .volume-container {
@@ -1988,12 +1998,16 @@ body {
 }
 
 /* ===== Audio Visualizer ===== */
+/* ===== Audio Visualizer ===== */
 .audio-visualizer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
   width: 100%;
-  height: 40px;
-  margin-bottom: 4px;
-  border-radius: 4px;
-  background: transparent;
+  height: 100%;
+  z-index: 0;
+  opacity: 0.2;
+  pointer-events: none;
 }
 
 /* ===== Mobile Navigation ===== */
